@@ -3,51 +3,72 @@
 <head>
   <title>入門編</title>
   <meta charset="utf-8"/>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/105/three.min.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+  </style>
 </head>
 <body>
   <canvas id="myCanvas"></canvas>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/106/three.min.js"></script>
   <script>
-    // ページの読み込みを待つ
-    window.addEventListener('load', init);
+    let box, renderer, scene, camera;
 
-    function init() {
+    // 毎フレーム時に実行されるループイベントです
+    const animation = () => {
+      box.rotation.y += 0.01;
+      box.rotation.x += 0.01;
+      renderer.render(scene, camera);
 
-      // サイズを指定
-      const width = 960;
-      const height = 540;
+      requestAnimationFrame(animation);
+    }
 
+    const init = () => {
       // レンダラーを作成
-      const renderer = new THREE.WebGLRenderer({
+      renderer = new THREE.WebGLRenderer({
         canvas: document.querySelector('#myCanvas')
       });
+      // 背景色の変更
+      // renderer.setClearColor(0xffffff, 1);
+
+      // シーンを作成
+      scene = new THREE.Scene();
+
+      // カメラを作成
+      camera = new THREE.PerspectiveCamera(45, 1.0);
+      camera.position.set(0, 0, 1000);
+
+      // 箱を作成
+      const geometry = new THREE.BoxGeometry(300, 300, 300);
+      const material = new THREE.MeshNormalMaterial();
+      box = new THREE.Mesh(geometry, material);
+      scene.add(box);
+
+      animation();
+    }
+    
+    const onResize = () => {
+      // サイズを取得
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+
+      // レンダラーのサイズを調整する
       renderer.setPixelRatio(window.devicePixelRatio);
       renderer.setSize(width, height);
 
-      // シーンを作成
-      const scene = new THREE.Scene();
-
-      // カメラを作成
-      const camera = new THREE.PerspectiveCamera(45, width / height);
-      camera.position.set(0, 0, +1000);
-
-      // 箱を作成
-      const geometry = new THREE.BoxGeometry(400, 400, 400);
-      const material = new THREE.MeshNormalMaterial();
-      const box = new THREE.Mesh(geometry, material);
-      scene.add(box);
-
-      tick();
-
-      // 毎フレーム時に実行されるループイベントです
-      function tick() {
-        box.rotation.y += 0.01;
-        box.rotation.x += 0.01;
-        renderer.render(scene, camera); // レンダリング
-
-        requestAnimationFrame(tick);
-      }
+      // カメラのアスペクト比を正す
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
     }
+
+    // ページの読み込みを待つ
+    window.addEventListener('load', init);
+    window.addEventListener('load', onResize);
+    // リサイズイベント発生時に実行
+    window.addEventListener('resize', onResize);
   </script>
 </body>
 </html>
